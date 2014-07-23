@@ -7,6 +7,7 @@ using System.IO ;
 using System.Runtime.InteropServices ;
 using System.Net ;
 using System.Windows.Forms ;
+using TripeSoft.IO;
 
 //===================================================================================================
 //	MOBI/EXTH Formatting taken from:		http://wiki.mobileread.com/wiki/MOBI
@@ -1875,7 +1876,45 @@ namespace Tripe.eBook {
 
 	class Program
 	{
-		static int Main( string[] args )
+		static void Main( string[] args )
+		{
+			byte[] buffer = Encoding .ASCII.GetBytes( "abcdefghijklm" ) ;
+			MemoryStream ms = new MemoryStream( buffer );
+			MemoryStream sms = new MemoryStream( buffer, 5, 5 );
+			StreamChunk sc = new StreamChunk( ms, 5, 5 );
+
+			int offset = 0;
+			int count  = 6;
+
+			Console.WriteLine( "Using memory stream" );
+			try
+			{
+				Console.WriteLine( "Before:" + Encoding.ASCII.GetString( buffer ) );
+				sms.Write( Encoding.ASCII.GetBytes( "VWXYZ@" ), offset, count );
+				Console.WriteLine( " After:" + Encoding.ASCII.GetString( buffer ) );
+			}
+			catch( Exception ex )
+			{
+				Console.WriteLine( "Exception: " + ex.GetType() + ": " + ex.Message );
+			}
+
+			ms.Position = 0;
+			ms.Write( Encoding.ASCII.GetBytes( "abcdefghijklm" ), 0, buffer.Length );
+			Console.WriteLine( "Using stream chunk" );
+			try
+			{
+				sc.Position = 0;
+				Console.WriteLine( "Before:" + Encoding.ASCII.GetString( buffer ) );
+				sc.Write( Encoding.ASCII.GetBytes( "VWXYZ@" ), offset, count );
+				Console.WriteLine( " After:" + Encoding.ASCII.GetString( buffer ) );
+			}
+			catch( Exception ex )
+			{
+				Console.WriteLine( "Exception: " + ex.GetType() + ": " + ex.Message );
+			}
+			Console.ReadLine();
+		}
+		static int RealMain( string[] args )
 		{
 			bool dumpOnly = Environment.GetEnvironmentVariable( "TripeMobiDump" ) != null ;
 

@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TripeMobi", "MOBI\TripeMobi.csproj", "{F520EB6A-463E-4BBE-AB86-64D3E0586ABE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stream", "Stream\Stream.csproj", "{AA3B3476-2DEF-4AB7-B1D2-53E358BAE0B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{F520EB6A-463E-4BBE-AB86-64D3E0586ABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F520EB6A-463E-4BBE-AB86-64D3E0586ABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F520EB6A-463E-4BBE-AB86-64D3E0586ABE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA3B3476-2DEF-4AB7-B1D2-53E358BAE0B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA3B3476-2DEF-4AB7-B1D2-53E358BAE0B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA3B3476-2DEF-4AB7-B1D2-53E358BAE0B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA3B3476-2DEF-4AB7-B1D2-53E358BAE0B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
