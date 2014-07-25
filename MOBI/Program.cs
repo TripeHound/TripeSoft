@@ -7,7 +7,7 @@ using System.IO ;
 using System.Runtime.InteropServices ;
 using System.Net ;
 using System.Windows.Forms ;
-using TripeSoft.IO;
+using TripeSoft.Stream;
 
 //===================================================================================================
 //	MOBI/EXTH Formatting taken from:		http://wiki.mobileread.com/wiki/MOBI

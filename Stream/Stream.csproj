@@ -8,8 +8,8 @@
     <ProjectGuid>{AA3B3476-2DEF-4AB7-B1D2-53E358BAE0B4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StreamChunk</RootNamespace>
-    <AssemblyName>StreamChunk</AssemblyName>
+    <RootNamespace>TripeSoft.Stream</RootNamespace>
+    <AssemblyName>TripeSoft.Stream</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -36,8 +36,10 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PartitionedStream.cs" />
     <Compile Include="StreamChunk.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
