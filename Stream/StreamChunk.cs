@@ -6,20 +6,21 @@
 	//using System.Text;
 	using System.IO;
 
-	//GLH
+	//---------------------------------------------------------------------------------------------------------------------------
 	//	Not sure whether 'StreamChunk' should derive from 'Stream' or just have one as a private member.
 	//	Deriving gives us the pre-defined interface (and, from the description, we're inheriting some
 	//	virtual behaviour), but we're not really "using" the base class (I think) ... all calls to "do"
 	//	something are fired through the private member.
 	//
-	//	Despite my reservations, it seems at least one other things deriving is the right way; see:
+	//	Despite my reservations, it seems at least one other thinks deriving is the right way; see:
 	//		http://www.java2s.com/Code/CSharp/File-Stream/BufferedInputStream.htm
-	//
+	//---------------------------------------------------------------------------------------------------------------------------
 
 	/// <summary>
 	/// Encapsulates a generic <seealso cref="Stream"/> to provide access to a defined 'chunk' of
 	/// the underlying stream, preventing reading, writing and seeking outside the defined limits.
 	/// </summary>
+	//---------------------------------------------------------------------------------------------------------------------------
 	public class StreamChunk : Stream
 	{
 		private Stream	underlyingStream;
@@ -116,7 +117,7 @@
 		/// <param name="offset">Offset within 'buffer' to store the data.</param>
 		/// <param name="count">Number of bytes to read.</param>
 		/// <returns>Number of bytes actually read.</returns>
-		/// <exception cref="ArgumentException">Data to be read would extend beyond the chunk.	</exception>
+		/// <exception cref="ArgumentException">Data to be read would extend beyond the chunk.</exception>
 		public override int Read( byte[] buffer, int offset, int count )
 		{
 //				if( !CanRead )
@@ -124,6 +125,17 @@
 			if( Position + count > chunkLength )
 				throw new ArgumentException( );
 			return underlyingStream.Read( buffer, offset, count );
+		}
+
+		/// <summary>
+		/// Reads a single byte from underlying stream.
+		/// </summary>
+		/// <returns>Byte read</returns>
+		/// <exception cref="ArgumentException">Underlying stream not positioned within chunk.</exception>
+		public override int ReadByte()
+		{
+			long i = Position; // Will throw if underlying stream not within chunk
+			return underlyingStream.ReadByte();
 		}
 
 		/// <summary>
@@ -140,6 +152,17 @@
 			if( Position + count > chunkLength )
 				throw new ArgumentException();
 			underlyingStream.Write( buffer, offset, count );
+		}
+
+		/// <summary>
+		/// Writes a single byte to the underlying stresm.
+		/// </summary>
+		/// <param name="value">Byte to be written</param>
+		/// <exception cref="ArgumentException">Underlying stream not positioned within chunk.</exception>
+		public override void WriteByte( byte value )
+		{
+			long i = Position;	// Will throw if underlying stream not within chunk
+			underlyingStream.WriteByte( value );
 		}
 
 		/// <summary>
@@ -176,11 +199,18 @@
 			}
 		}
 
+		/// <summary>
+		/// Flushes the underlying stream.
+		/// </summary>
 		public override void Flush()
 		{
-			throw new NotImplementedException();
+			underlyingStream.Flush();
 		}
 
+		/// <summary>
+		/// Throws NotImplementedException: the size of a chunk cannot be changed.
+		/// </summary>
+		/// <param name="value">Ignored</param>
 		public override void SetLength( long value )
 		{
 			throw new NotImplementedException();
