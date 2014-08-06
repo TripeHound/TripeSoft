@@ -1767,7 +1767,7 @@ namespace Tripe.eBook {
 			public MobiID		identifier ;		// "EXTH"
 			public UInt32		headerLength ;		//	inc. above
 			public UInt32		recordCount ;
-			public EXTHRecord[]	records ;
+			public EXTHRecord[]records ;
 			public UInt32		nPadding ;
 
 			public UInt32		Size ;
