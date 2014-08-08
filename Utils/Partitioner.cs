@@ -23,6 +23,7 @@ namespace TripeSoft.Utils
 			/// <param name="length">Length of the new partition.</param>
 			public Partition( long offset, long length, States state )
 			{
+				//TODO: Prevent silly values
 				Offset	= offset;
 				Length	= length;
 				State	= state;
@@ -70,11 +71,11 @@ namespace TripeSoft.Utils
 			{
 				Partition remainder = null;
 				if( !IsTruncatable )
-					throw new InvalidOperationException( "Partition is not truncatable" );
+					throw new InvalidOperationException( ExMsg.PartitionNotTruncatable );
 				if( offset < Offset || offset > NextOffset )
-					throw new ArgumentOutOfRangeException( "offset", offset, "Truncation point is outside partiton" );
-				if( offset == NextOffset )
-					throw new Exception( "TODO: Truncate at beginning" );
+					throw new ArgumentOutOfRangeException( "offset", offset, ExMsg.TruncationOutsidePartition );
+				if( offset == Offset )
+					throw new ArgumentOutOfRangeException( "offset", offset, ExMsg.TruncationWouldDelete );
 				if( offset < NextOffset )
 					remainder = new Partition( offset, Remainder( offset ), States.Unassigned );
 				Length = offset - Offset;
@@ -113,7 +114,7 @@ namespace TripeSoft.Utils
 			/// <returns>True if the offset is contained in the partition.</returns>
 			public bool Contains( long offset )
 			{
-				return offset >= Offset && offset < NextOffset;
+				return ( offset >= Offset ) && ( offset < NextOffset );
 			}
 
 			/// <summary>
@@ -136,6 +137,15 @@ namespace TripeSoft.Utils
 				return Contains( partition.Offset, partition.Length );
 			}
 
+			/// <summary>
+			/// Determines if the given offset lies IN the partition OR immediately after it.
+			/// </summary>
+			/// <param name="offset">Offset to test.</param>
+			/// <returns>True if the offset lies in or immediately after the partition.</returns>
+			public bool ContainsOrNext( long offset )
+			{
+				return ( offset >= Offset ) && ( offset <= NextOffset );
+			}
 			/// <summary>
 			/// Determines if the area specified by the offset and length exactly matches the current partition.
 			/// </summary>
@@ -166,6 +176,9 @@ namespace TripeSoft.Utils
 		{
 			public const string NotInParentPartition		= "Outside partitioned space";
 			public const string PartitionAlreadyAssigned	= "Partition has already been assigned";
+			public const string PartitionNotTruncatable		= "Partition is not truncatable";
+			public const string TruncationOutsidePartition	= "Truncation point is outside partiton";
+			public const string TruncationWouldDelete		= "Truncation would delete partition";
 		}
 		public Partitioner( long length )
 		{
