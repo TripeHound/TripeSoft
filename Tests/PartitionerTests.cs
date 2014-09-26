@@ -43,6 +43,7 @@ namespace Tests
 		//
 		// Use ClassCleanup to run code after all tests in a class have run
 		// [ClassCleanup()]
+		//aaaaaaa
 		// public static void MyClassCleanup() { }
 		//
 		// Use TestInitialize to run code before running each test 

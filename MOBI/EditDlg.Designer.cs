@@ -103,7 +103,7 @@ namespace TripeMobi {
 			this.btnLastFirst.TabIndex = 0;
 			this.btnLastFirst.Text = "Last, First";
 			this.btnLastFirst.UseVisualStyleBackColor = true;
-			this.btnLastFirst.Click += new System.EventHandler(this.button1_Click);
+			this.btnLastFirst.Click += new System.EventHandler(this.LastFirst_Click);
 			// 
 			// panel1
 			// 

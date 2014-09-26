@@ -12,7 +12,7 @@ namespace TripeMobi {
 			InitializeComponent();
 		}
 
-		private void button1_Click( object sender, EventArgs e ) {
+		private void LastFirst_Click( object sender, EventArgs e ) {
 			if( txtAuthor.Text.Contains( "," ) ) {
 				string[] bits = txtAuthor.Text.Split( ',' ) ;
 				txtAuthor.Text = bits[1].Trim() + " " + bits[0] ;

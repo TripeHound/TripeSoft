@@ -8,6 +8,7 @@ using System.Runtime.InteropServices ;
 using System.Net ;
 using System.Windows.Forms ;
 using TripeSoft.Stream;
+using System.Xml;
 
 //===================================================================================================
 //	MOBI/EXTH Formatting taken from:		http://wiki.mobileread.com/wiki/MOBI
@@ -475,19 +476,18 @@ namespace Tripe.eBook {
 		//			before checking further??
 		//-----------------------------------------------------------------------------------------------
 		protected abstract class MobiElement {
-			//	VS2005 doesn't allow "automatic" properties (empty get/set) so use variables
-			public UInt32 Address ;/*{
+			public UInt32 Address {
 				get ;
 				protected set ;
-			}*/
-			public /*virtual*/ UInt32 Length ;/*{
+			}
+			public virtual UInt32 Length {
 				get ;
 				protected set ;
-			}*/
-			public /*virtual*/ UInt32 MinSize ;/*{
+			}
+			public virtual UInt32 MinSize {
 				get { return 0 ; }
 				protected set {}
-			}*/
+			}
 			protected abstract void LoadElementFrom( byte[] fileData, ref uint filePosn ) ;
 			public void LoadFrom( byte[] fileData, ref uint filePosn ) {
 				//Utils.Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
@@ -502,7 +502,6 @@ namespace Tripe.eBook {
 		protected class MobiDataBlock : MobiElement {
 			protected byte[]	data ;
 
-			/*
 			public override UInt32 Length {
 				get {
 					return (UInt32)data.Length ;
@@ -511,11 +510,11 @@ namespace Tripe.eBook {
 			public override UInt32 MinSize {
 				get ;
 				protected set ;
-			}*/
-			public string Title ;/*{
+			}
+			public string Title {
 				get ;
 				private set ;
-			}*/
+			}
 			public MobiDataBlock() {}
 			public MobiDataBlock( byte[] fileData, ref uint filePosn, UInt32 count, string title ) {
 				MinSize = count ;
@@ -731,19 +730,19 @@ namespace Tripe.eBook {
 			}
 			public UInt32 WriteTo( BinaryWriter bw, UInt32 adjustment ) {
 				UInt32 result = PutBytes( bw, databaseName )
-					+	PutSwapped16( bw, attributes		)
-					+	PutSwapped16( bw, version			)
-					+	PutSwapped32( bw, dateCreated		)
-					+	PutSwapped32( bw, dateModified		)
-					+	PutSwapped32( bw, dateBackedup		)
-					+	PutSwapped32( bw, modification		)
-					+	PutSwapped32( bw, appInfoID			)
-					+	PutSwapped32( bw, sortInfoID		)
-					+	PutSwapped32( bw, type				)
-					+	PutSwapped32( bw, creator			)
-					+	PutSwapped32( bw, uniqueIDseed		)
-					+	PutSwapped32( bw, nextRecordListID	)
-					+	PutSwapped16( bw, recordCount		) ;
+							+	PutSwapped16( bw, attributes		)
+							+	PutSwapped16( bw, version			)
+							+	PutSwapped32( bw, dateCreated		)
+							+	PutSwapped32( bw, dateModified		)
+							+	PutSwapped32( bw, dateBackedup		)
+							+	PutSwapped32( bw, modification		)
+							+	PutSwapped32( bw, appInfoID			)
+							+	PutSwapped32( bw, sortInfoID		)
+							+	PutSwapped32( bw, type				)
+							+	PutSwapped32( bw, creator			)
+							+	PutSwapped32( bw, uniqueIDseed		)
+							+	PutSwapped32( bw, nextRecordListID	)
+							+	PutSwapped16( bw, recordCount		) ;
 				result += records[0].WriteTo( bw, 0 ) ;				//TODO: No adjustment to 1st record
 				for( int i=1 ; i < recordCount ; i++ )				//TODO: Remainder need adjustment
 					result += records[i].WriteTo( bw, adjustment ) ;
@@ -796,6 +795,7 @@ namespace Tripe.eBook {
 		//	This should write all the records to a new file, which means it would need "neat" ways of
 		//	knowning when records have been replaced.  For the present, since we're only interested in
 		//	the first record (the one that contains the MOBI/EXTH etc. data), we're going to "busk it".
+		//
 		public void LoadFrom( string fileName ) {
 			this.fileName = fileName ;
 			Utils.Trace.MsgLine( "Opening '{0}'", fileName ) ;
@@ -1092,24 +1092,27 @@ namespace Tripe.eBook {
 		/// after changes to EXTH strings and/or the FullTitle field, before everything can be
 		/// written to a new file.
 		/// </summary>
-		protected UInt32 RebuildSizeAndOffsets() {
-			UInt32 recZeroOffset = 0 ;
-			recZeroOffset += pdh.Size ;
-			recZeroOffset += mh.Size ;
-			recZeroOffset += exth.RebuildSizeAndOffsets() ;
-			if( mh.drmOffset != NOT_USED ) {
-				mh.drmOffset = recZeroOffset ;
+		protected UInt32 RebuildSizeAndOffsets( UInt32 orgZeroSize ) {
+			UInt32 recZeroSize = 0 ;
+			recZeroSize += pdh.Size ;
+			recZeroSize += mh.Size ;
+			recZeroSize += exth.RebuildSizeAndOffsets() ;
+			if( mh.HasDRM() ) {
+				mh.drmOffset = recZeroSize ;
 				mh.drmSize   = (UInt32) drmData.Length ;
-				recZeroOffset += mh.drmSize ;
+				recZeroSize += mh.drmSize ;
 			}
-			mh.fullNameOffset = recZeroOffset ;
+			mh.fullNameOffset = recZeroSize ;
 			mh.fullNameLength = (UInt32) fullName.Length ;
-			recZeroOffset += mh.fullNameLength ;
-			fullNamePadding = 2 + PaddingNeededToFourByteBoundary( recZeroOffset + 2 ) ;
-			recZeroOffset += fullNamePadding ;
-			recZeroOffset += (UInt32) gap3.Length ;
+			recZeroSize += mh.fullNameLength ;
+			fullNamePadding = 2 + PaddingNeededToFourByteBoundary( recZeroSize + 2 ) ;
+			recZeroSize += fullNamePadding ;
+			if( recZeroSize <= orgZeroSize )
+				gap3.Replace( new byte[ orgZeroSize - recZeroSize ] ) ;
+//				gap3.Length = orgZeroSize - recZeroSize ;
+			recZeroSize += (UInt32) gap3.Length ;
 
-			return recZeroOffset ;		// New size for record zero
+			return recZeroSize ;		// New size for record zero
 		}
 
 		public UInt32 WriteTo( string fileName ) {
@@ -1140,17 +1143,27 @@ namespace Tripe.eBook {
 			//			the case, and I've never seen an example of it NOT being the case, but
 			//			if it ever WERE the case, things might break!
 			//
-			UInt32 recZeroSize = RebuildSizeAndOffsets() ;
+			//	26.09.2014
+			//	I've come to realise that the 'gap3' block is "padding" for the EXTH data to
+			//	grow into without needing to rewrite the whole file.
+			//
 			UInt32 orgZeroSize = pfh[1].filePosn - pfh[0].filePosn ;	// Original size
+			UInt32 recZeroSize = RebuildSizeAndOffsets( orgZeroSize ) ;
 			UInt32 adjustment  = recZeroSize - orgZeroSize ;
 			Utils.Trace.MsgLine( "Adjustment to remaining PDB records: {0}", (int)adjustment ) ;
 
 			//	Open the file and begin writing bits and pieces...
-			///
-			BinaryWriter bw = new BinaryWriter( File.Open( fileName, FileMode.Create ) ) ;
-			Utils.Trace.MsgLine( "Writing to: {0}", fileName ) ;
+			//
+			BinaryWriter bw = null ;
+			if( adjustment == 0 ) {
+				bw = new BinaryWriter( File.Open( fileName, FileMode.Open ) ) ;
+				Utils.Trace.MsgLine( "Replacing Palm/MOBI/EXTH data in: {0}", fileName ) ;
+			} else {
+				bw = new BinaryWriter( File.Open( fileName, FileMode.Create ) ) ;
+				Utils.Trace.MsgLine( "Replacing whole file: {0}", fileName ) ;
+			}
 			UInt32 filePosn = 0 ;
-			UInt32 written ;
+			UInt32 written = 0 ;
 
 			//	Palm File Header: this includes the PDB record positions, which
 			//	will need to be adjusted by the amount calculated above.
@@ -1188,11 +1201,11 @@ namespace Tripe.eBook {
 
 			//	Write the DRM data if originally present.
 			//
-			//	TODO:	All files seen have EXTH--DRM--TITLE in that order.  The reader will [should!]
-			//			accept files that have a different order, but currently they always written in
+			//	TODO:	All files seen have EXTH--DRM--TITLE in that order.  The reader probably should
+			//			accept files that have a different order, but currently they are always written in
 			//			this order.  Possibly have options to alter this.
 			//
-			if( mh.drmOffset != NOT_USED ) {
+			if( mh.HasDRM() ) {
 				if( recZeroPosn + mh.drmOffset != filePosn ) throw new MobiPositionException( "About to write DRM Data at wrong position", filePosn, recZeroPosn, mh.drmOffset ) ;
 				if( mh.drmSize != drmData.Length ) throw new Exception( string.Format( "DRM Data wrong size: headerLength={0}, byteLength={1}", mh.drmSize, drmData.Length ) ) ;
 				written = PutBytes( bw, drmData ) ;
@@ -1228,18 +1241,18 @@ namespace Tripe.eBook {
 			//
 			if( filePosn != pfh[1].filePosn + adjustment ) throw new MobiPositionException( "End of Doc/MOBI header at wrong position", filePosn, pfh[1].filePosn, 0 ) ;
 
-			//	Write all the remaining PDB records in one swell foop.
+			//	Write all the remaining PDB records in one swell foop UNLESS the adjustment was zero,
+			//	in which case we've managed to squeeze everything into the original space (probably by
+			//	altering the size of GAP3).
 			//
 			//	WARN:	This would break if the PDB[0] record wasn't physically the first in the file.
 			//
-			//	TODO:	The presence of GAP3 may mean that copying the rest of the file isn't really
-			//			needed (either by buffering in memory as we currently do, or by copying from
-			//			one file to another).
-			//
-			written = PutBytes( bw, fileData, pfh[1].filePosn, (UInt32) fileData.Length - pfh[1].filePosn ) ;
-			filePosn += written ;
-
-			Utils.Trace.MsgLine( "Written {0} bytes", filePosn ) ;
+			if( adjustment != 0 ) {
+				written = PutBytes( bw, fileData, pfh[1].filePosn, (UInt32) fileData.Length - pfh[1].filePosn ) ;
+				filePosn += written ;
+				Utils.Trace.MsgLine( "Written {0} bytes", filePosn ) ;
+			} else
+				Utils.Trace.MsgLine( "Updated {0} bytes", filePosn ) ;
 
 			bw.Close() ;
 
@@ -1617,10 +1630,15 @@ namespace Tripe.eBook {
 			}
 
 			public bool HasDRM() {
-				if( drmOffset == NOT_USED )
+				//	If either the offset is NOT_USED (= -1) or the size is zero, there is no DRM.
+				//
+				if( drmOffset == NOT_USED || drmSize == 0 )
 					return false ;
-				if( drmOffset == 0x0003 )		//	Weird value seen when DRM not used
-					return false ;
+				//TODO:Remove...?
+				//	Old hack for some Amazon books: should not be needed now we're looking at the size.
+				//
+				//if( drmOffset == 0x0003 )		//	Weird value seen when DRM not used
+				//	return false ;
 				return true ;
 			}
 		}
@@ -1872,13 +1890,72 @@ namespace Tripe.eBook {
 					string.Format( "           nPadding: 0x{0:x8}, {0}\r\n",	nPadding			) ;
 			}
 		}
+		public void DumpXML() {
+			TripeXmlDocument xml = new TripeXmlDocument() ;
+			//TripeNode ebook = new TripeNode( xml.AppendChild( xml.CreateElement( "ebook" ) ) ) ;
+			TripeNode ebook =	new TripeNode( xml, "ebook" ) ;
+			TripeNode palmFile =new TripeNode( ebook, "palmfile" ) ;
+			TripeNode palmDoc = new TripeNode( ebook, "palmdoc" ) ;
+			TripeNode mobi =	new TripeNode( ebook, "mobi" ) ;
+			TripeNode exth =	new TripeNode( ebook, "exth" ) ;
+			palmFile.AddChild( "databaseName", pfh.databaseName				)
+					.AddChild( "uniqueIDseed",	pfh.uniqueIDseed.ToString()	)
+					;
+			palmDoc	.AddChild( "textLength",	pdh.textLength.ToString()	)
+					.AddChild( "recordCount",	pdh.recordCount.ToString()	)
+					;
+			mobi	.AddChild( "codePage",		mh.codePage.ToString()		)
+					.AddChild( "uniqueID",		mh.uniqueID.ToString()		)
+					;
+			exth	.AddChild( "author",		Author						)
+					.AddChild( "title",			Title						)
+					;
+			Utils.Trace.MsgLine( "--------------------\n{0}\n--------------------", xml.OuterXml ) ;
+		}
+	}
+
+	class TripeNode
+	{
+		private XmlNode node ;
+		public TripeNode( XmlNode node ) {
+			this.node = node ;
+		}
+		public TripeNode( XmlDocument doc, String element ) {
+			this.node = doc.AppendChild( doc.CreateElement( element ) ) ;
+		}
+		public TripeNode( TripeNode parent, String element ) {
+			XmlDocument doc = parent.node.OwnerDocument ;
+			this.node = parent.node.AppendChild( doc.CreateElement( element ) ) ;
+		}
+		public TripeNode AddChild( XmlNode child ) {
+			node.AppendChild( child ) ;
+			return this ;
+		}
+		public TripeNode AddChild( String tag, String value ) {
+			XmlDocument doc = node.OwnerDocument ;
+			node.AppendChild( doc.CreateElement( tag ).AppendChild( doc.CreateTextNode( value ) ).ParentNode ) ;
+			return this ;
+		}
+		public TripeNode AddChild( String tag, byte[] value ) {
+			return AddChild( tag, Encoding.UTF8.GetString( value ) ) ;
+		}
+	}
+	class TripeXmlDocument : XmlDocument
+	{
+		public XmlNode NewTag( String tag, byte[] value ) {
+			return NewTag( tag, Encoding.UTF8.GetString( value ) ) ;
+		}
+		public XmlNode NewTag( String tag, String value ) {
+			return CreateElement( tag ).AppendChild( CreateTextNode( value ) ).ParentNode ;
+		}
 	}
 
 	class Program
 	{
-		static void Main( string[] args )
+		static int Main( string[] args )
 		{
-			byte[] buffer = Encoding .ASCII.GetBytes( "abcdefghijklm" ) ;
+#if __STREAM_CHUNK_TESTING
+			byte[] buffer = Encoding.ASCII.GetBytes( "abcdefghijklm" ) ;
 			MemoryStream ms = new MemoryStream( buffer );
 			MemoryStream sms = new MemoryStream( buffer, 5, 5 );
 			StreamChunk sc = new StreamChunk( ms, 5, 5 );
@@ -1913,37 +1990,54 @@ namespace Tripe.eBook {
 				Console.WriteLine( "Exception: " + ex.GetType() + ": " + ex.Message );
 			}
 			Console.ReadLine();
-		}
-		static int RealMain( string[] args )
-		{
+#else
 			bool dumpOnly = Environment.GetEnvironmentVariable( "TripeMobiDump" ) != null ;
+			bool dumpXML = false ;
+			int argp = 0 ;
 
 			if( args.Length == 0 ) {
-				Utils.Trace.MsgLine( "usage: TripeMobi <mobifile>" ) ;
+				Utils.Trace.MsgLine( "usage: TripeMobi [-v][-d] <mobifile>" ) ;
 				return 1 ;
 			}
+
 			try {
-				MOBIfile mobi = new MOBIfile( args[0] ) ;
-				TripeMobi.EditDlg dlg = new TripeMobi.EditDlg() ;
+				for( argp = 0 ; args[argp][0] == '-' ; argp++ ) {
+					switch( args[argp] ) {
+						case "-v":
+							Utils.Trace.ConsoleOut = true ;
+							break ;
+						case "-d":
+							dumpOnly = true ;
+							Utils.Trace.ConsoleOut = true ;
+							break ;
+						case "-x":
+							dumpXML = true ;
+							break ;
+						default:
+							throw new Exception( String.Format( "Unrecognised option '%s'", args[argp] ) );
+					}
+				}
+
+				MOBIfile mobi = new MOBIfile( args[argp] );
+				if( dumpXML )
+					mobi.DumpXML() ;
+
 				if( !dumpOnly ) {
-					dlg.txtAuthor.Text	= mobi.Author ;
+					TripeMobi.EditDlg dlg = new TripeMobi.EditDlg();
+					dlg.txtAuthor.Text	= mobi.Author;
 					dlg.txtTitle.Text	= mobi.Title ;
 					if( dlg.ShowDialog() == DialogResult.OK ) {
 						if( (mobi.Author != dlg.txtAuthor.Text) || (mobi.Title != dlg.txtTitle.Text) ) {
 							mobi.Author = dlg.txtAuthor.Text ;
 							mobi.Title	= dlg.txtTitle.Text ;
-#if NEWFILE
-							mobi.WriteTo( args[0] + ".EEK.azw" ) ;
-#else
-							mobi.WriteTo( args[0] ) ;
-#endif
+							mobi.WriteTo( args[argp] ) ;
 						}
 					}
 				}
 			} catch( Exception e ) {
-				throw new Exception( string.Format( "Processing: {0}\r\nException: {1}\r\n{2}", args[0], e.Message, e.StackTrace ) ) ;
+				throw new Exception( string.Format( "Processing: {0}\r\nException: {1}\r\n{2}", args[argp], e.Message, e.StackTrace ) ) ;
 			}
-
+#endif
 			return 0 ;
 		}
 	}
