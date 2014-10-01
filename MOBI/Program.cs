@@ -9,6 +9,7 @@ using System.Net ;
 using System.Windows.Forms ;
 using TripeSoft.Stream;
 using System.Xml;
+using Tripe.Utils ;
 
 //===================================================================================================
 //	MOBI/EXTH Formatting taken from:		http://wiki.mobileread.com/wiki/MOBI
@@ -132,6 +133,22 @@ using System.Xml;
 //	padding (1..4 bytes) seems to be treated as "extra content" between the EXTH block and the FullName
 //	and gets preserved (see EXTRA CONTENT for more discussion on this).
 //	
+//---------------------------------------------------------------------------------------------------
+//	Side-files (from http://www.mobileread.com/forums/showthread.php?t=194234)
+//
+//		.ea/.eal:								End Actions (The 'Before you go..' at the end of a book).
+//		.mpb/.mpb1/.tan/.tas/.tal/.mbs/.han:	Notes, Bookmarks & Progress
+//		.phl:									Popular Highlights
+//		.azw:									Mobi book
+//		.tpz/.azw1:								Topaz book
+//		.pobi:									Periodical
+//		.azw2:									Kindlet (Active content)
+//		.azw3:									KF8 book
+//		.azw4:									Print-Replica book
+//		.apnx:									Page Numbers
+//
+//		There's also a bunch of other misc stuff in the sidecar (.sdr) folder on the K5: .azw3f, .azw3r,
+//		and .asc for X-Ray (among other things).
 //---------------------------------------------------------------------------------------------------
 //===================================================================================================
 
@@ -324,31 +341,31 @@ namespace Tripe.eBook {
 		/// <param name="title">Description of the array.</param>
 		protected static void DumpBytes( byte[] data, string title ) {
 			int i, j ;
-			Utils.Trace.MsgLine( "Dump {0} byte(s): {1}", data.Length, title ) ;
+			Trace.MsgLine( "Dump {0} byte(s): {1}", data.Length, title ) ;
 			for( i=0 ; i < data.Length ; i++ )
 				if( data[i] != 0 )
 					break ;
 			if( i == data.Length ) {
-				Utils.Trace.MsgLine( "000000  00 * {0}\r\n", data.Length ) ;
+				Trace.MsgLine( "000000  00 * {0}\r\n", data.Length ) ;
 				return ;
 			}
 
 			for( i=0 ; i < data.Length ; i += 16 ) {
-				Utils.Trace.Msg( "{0:x6} ", i ) ;
+				Trace.Msg( "{0:x6} ", i ) ;
 				for( j=0 ; (j < 16) && (i+j < data.Length) ; j++ ) {
-					if( j == 8 ) Utils.Trace.Msg( " -" ) ;
-					Utils.Trace.Msg( " {0:x2}", data[i+j] ) ;
+					if( j == 8 ) Trace.Msg( " -" ) ;
+					Trace.Msg( " {0:x2}", data[i+j] ) ;
 				}
 				for( /**/ ; j < 16 ; j++ ) {
-					if( j == 8 ) Utils.Trace.Msg( " -" ) ;
-					Utils.Trace.Msg( "   " ) ;
+					if( j == 8 ) Trace.Msg( " -" ) ;
+					Trace.Msg( "   " ) ;
 				}
-				Utils.Trace.Msg( "   " ) ;
+				Trace.Msg( "   " ) ;
 				for( j=0 ; (j < 16) && (i+j < data.Length) ; j++ )
-					Utils.Trace.Msg( "{0}", (data[i+j] < 32 ? '.' : (char)data[i+j]) ) ;
-				Utils.Trace.MsgLine() ;
+					Trace.Msg( "{0}", (data[i+j] < 32 ? '.' : (char)data[i+j]) ) ;
+				Trace.MsgLine() ;
 			}
-			Utils.Trace.MsgLine() ;
+			Trace.MsgLine() ;
 		}
 
 		//===============================================================================================
@@ -490,7 +507,7 @@ namespace Tripe.eBook {
 			}
 			protected abstract void LoadElementFrom( byte[] fileData, ref uint filePosn ) ;
 			public void LoadFrom( byte[] fileData, ref uint filePosn ) {
-				//Utils.Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
+				//Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
 				if( fileData == null ) throw new ArgumentException() ;
 				if( fileData.Length - filePosn < MinSize ) throw new ArgumentException() ;
 
@@ -530,7 +547,7 @@ namespace Tripe.eBook {
 			}
 			public void Dump() {
 				DumpBytes( data, Title, Address ) ;
-//				Utils.Trace.MsgLine( ToString() ) ;
+//				Trace.MsgLine( ToString() ) ;
 			}
 //			public override string ToString() {
 //			}
@@ -637,7 +654,7 @@ namespace Tripe.eBook {
 				LoadFrom( fileData, ref filePosn ) ;
 			}
 			public void LoadFrom( byte[] fileData, ref uint filePosn ) {
-				//Utils.Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
+				//Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
 				if( fileData == null ) throw new ArgumentException() ;
 				if( fileData.Length - filePosn < Size ) throw new ArgumentException() ;
 
@@ -650,7 +667,7 @@ namespace Tripe.eBook {
 					+	PutSwapped32( bw, id_attr ) ;
 			}
 			public void Dump() {
-				Utils.Trace.MsgLine( ToString() ) ;
+				Trace.MsgLine( ToString() ) ;
 			}
 			public override string ToString() {
 				return string.Format( "PalmRecordInfo [size={0}] at filePosn {1:x8}, {1}:\r\n", Size, Address ) +
@@ -700,7 +717,7 @@ namespace Tripe.eBook {
 				LoadFrom( fileData, ref filePosn ) ;
 			}
 			public void LoadFrom( byte[] fileData, ref uint filePosn ) {
-				//Utils.Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
+				//Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
 				if( fileData == null ) throw new ArgumentException() ;
 				if( fileData.Length - filePosn < 78 ) throw new ArgumentException() ;
 
@@ -750,7 +767,7 @@ namespace Tripe.eBook {
 				return result ;
 			}
 			public void Dump() {
-				Utils.Trace.MsgLine( ToString() ) ;
+				Trace.MsgLine( ToString() ) ;
 			}
 			public override string ToString() {
 				return string.Format( "PalmFileHeader [size={0}] at filePosn 0x{1:x8}, {1}:\r\n", Size, Address ) +
@@ -798,9 +815,9 @@ namespace Tripe.eBook {
 		//
 		public void LoadFrom( string fileName ) {
 			this.fileName = fileName ;
-			Utils.Trace.MsgLine( "Opening '{0}'", fileName ) ;
+			Trace.MsgLine( "Opening '{0}'", fileName ) ;
 			fileData = File.ReadAllBytes( fileName ) ;
-			Utils.Trace.MsgLine( "Read 0x{0:x8}, {0} bytes", fileData.Length ) ;
+			Trace.MsgLine( "Read 0x{0:x8}, {0} bytes", fileData.Length ) ;
 
 			filePosn = 0 ;
 			pfh = new PalmFileHeader( fileData, ref filePosn ) ;
@@ -809,7 +826,7 @@ namespace Tripe.eBook {
 			//pfh[1].Dump() ;
 			for( int i=0 ; i < pfh.recordCount ; i++ ) {
 #if false
-				Utils.Trace.MsgLine( string.Format(
+				Trace.MsgLine( string.Format(
 					"PDB[{0,3}]  FilePosn=[0x{1:x8}, {1,6}]  ATTR=[0x{2:x8}, {2,4}]  From1=[0x{3:x8}, {3,6}]  Len=[0x{4:x8}, {4,6}]",
 					i,
 					pfh[i].filePosn,
@@ -826,9 +843,9 @@ namespace Tripe.eBook {
 					pfh[i].filePosn ) ;
 #endif
 			}
-			Utils.Trace.MsgLine() ;
+			Trace.MsgLine() ;
 			if( filePosn != pfh[0].filePosn ) {
-				//Utils.Trace.MsgLine( "First PDB record does not follow header", filePosn, pfh[0].filePosn, 0 ) ;
+				//Trace.MsgLine( "First PDB record does not follow header", filePosn, pfh[0].filePosn, 0 ) ;
 				throw new MobiPositionException( "First PDB record does not follow header", filePosn, pfh[0].filePosn, 0 ) ;
 			}
 		}
@@ -857,7 +874,7 @@ namespace Tripe.eBook {
 				LoadFrom( fileData, ref filePosn ) ;
 			}
 			public void LoadFrom( byte[] fileData, ref uint filePosn ) {
-				//Utils.Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
+				//Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
 				if( fileData == null ) throw new ArgumentException() ;
 				if( fileData.Length - filePosn < Size ) throw new ArgumentException() ;
 
@@ -880,7 +897,7 @@ namespace Tripe.eBook {
 					+	PutSwapped16( bw, unknown		) ;
 			}
 			public void Dump() {
-				Utils.Trace.MsgLine( ToString() ) ;
+				Trace.MsgLine( ToString() ) ;
 			}
 			public override string ToString() {
 				return string.Format( "PalmDOCInfo [size={0}] at filePosn {1:x8}, {1}:\r\n", Size, Address ) +
@@ -958,8 +975,8 @@ namespace Tripe.eBook {
 				if( fileData[filePosn++] != 0x00 || fileData[filePosn++] != 0x00 )
 					throw new Exception( "Full name not followed by two 0x00 bytes" ) ;
 				fullNamePadding = 2 + SkipToFourByteBoundary( ref filePosn ) ;
-				Utils.Trace.MsgLine( "      Post-name pad: {0} bytes", fullNamePadding ) ;
-				Utils.Trace.MsgLine() ;
+				Trace.MsgLine( "      Post-name pad: {0} bytes", fullNamePadding ) ;
+				Trace.MsgLine() ;
 				//TODO:move padding into fullname class
 				gap3 = new MobiDataBlock( fileData, ref filePosn, pfh[1].filePosn - filePosn, "GAP3" ) ;
 				gap3.Dump() ;
@@ -976,8 +993,8 @@ namespace Tripe.eBook {
 				if( fileData[filePosn++] != 0x00 || fileData[filePosn++] != 0x00 )
 					throw new Exception( "Full name not followed by two 0x00 bytes" ) ;
 				fullNamePadding = 2 + SkipToFourByteBoundary( ref filePosn ) ;
-				Utils.Trace.MsgLine( "      Post-name pad: {0} bytes", fullNamePadding ) ;
-				Utils.Trace.MsgLine() ;
+				Trace.MsgLine( "      Post-name pad: {0} bytes", fullNamePadding ) ;
+				Trace.MsgLine() ;
 				//TODO:move padding into fullname class
 				if( mh.HasDRM() ) {
 					gap2 = new MobiDataBlock( fileData, ref filePosn, pfh[0].AddressOf( mh.drmOffset ) - filePosn, "GAP2" ) ;
@@ -994,7 +1011,7 @@ namespace Tripe.eBook {
 			//
 			if( mh.drmOffset == 3 )
 				//TODO:!!!
-				Utils.Trace.MsgLine( "---------------- drmOffset == 3 in {0} --------------------", fileName ) ;
+				Trace.MsgLine( "---------------- drmOffset == 3 in {0} --------------------", fileName ) ;
 			else if( mh.drmOffset != NOT_USED ) {
 				if( pdh.AddressOf( mh.drmOffset ) != filePosn )
 					throw new MobiPositionException( "DRM data does not follow EXTH data", filePosn, pdh.Address, mh.drmOffset ) ;
@@ -1013,7 +1030,7 @@ namespace Tripe.eBook {
 			if( pdh.AddressOf( mh.fullNameOffset ) == filePosn + 4 ) {
 				UInt32 gap = GetSwapped32( fileData, ref filePosn ) ;
 				if( gap == 0x0000 ) {
-					Utils.Trace.MsgLine( "---------------- four-byte gap (padding={0}) -----------------", exth.nPadding ) ;
+					Trace.MsgLine( "---------------- four-byte gap (padding={0}) -----------------", exth.nPadding ) ;
 					DumpBytes( GetBytes( fileData, NonRef32( filePosn ), 0x80 ), "Following 0x80 bytes", filePosn       ) ;
 				}
 				else // Not 
@@ -1030,12 +1047,12 @@ namespace Tripe.eBook {
 			//
 			fullName = GetBytes( fileData, ref filePosn, mh.fullNameLength ) ;
 			DumpBytes( fullName, "Full Name", pdh.Address, mh.fullNameOffset ) ;
-			Utils.Trace.MsgLine( "          Full Name: \"{0}\"", Encoding.GetEncoding((int)mh.codePage).GetString( fullName ) ) ;
+			Trace.MsgLine( "          Full Name: \"{0}\"", Encoding.GetEncoding((int)mh.codePage).GetString( fullName ) ) ;
 			if( fileData[filePosn++] != 0x00 || fileData[filePosn++] != 0x00 )
 				throw new Exception( "Full name not followed by two 0x00 bytes" ) ;
 			fullNamePadding = 2 + SkipToFourByteBoundary( ref filePosn ) ;
-			Utils.Trace.MsgLine( "      Post-name pad: {0} bytes", fullNamePadding ) ;
-			Utils.Trace.MsgLine() ;
+			Trace.MsgLine( "      Post-name pad: {0} bytes", fullNamePadding ) ;
+			Trace.MsgLine() ;
 
 			remainder = GetBytes( fileData, ref filePosn, pfh[1].filePosn - filePosn ) ;
 			DumpBytes( remainder, "[??remainder??]", pdh.Address, filePosn - pdh.Address ) ;
@@ -1049,22 +1066,22 @@ namespace Tripe.eBook {
 			UInt32 recZeroRemainderOffset =  mobiOffset - pfh[0].offset ;
 			byte[] recZeroRemainder = GetBytes( mobiData, ref mobiOffset, (pfh[0].offset + mh.fullNameOffset) - mobiOffset ) ;
 			DumpBytes( recZeroRemainder, string.Format( "RecordZeroRemainder @ {0:x8}, {0}", recZeroRemainderOffset ) ) ;
-			Utils.Trace.MsgLine( "    mobiOffset: {0:x8}, {0}", mobiOffset ) ;
-			Utils.Trace.MsgLine( "fullNameOffset: {0:x8}, {0}", mh.fullNameOffset ) ;
-			Utils.Trace.MsgLine( "fullNameLength: {0:x8}, {0}", mh.fullNameLength ) ;
-			Utils.Trace.MsgLine( " PDB[0].Offset: {0:x8}, {0}", pfh[0].offset ) ;
-			Utils.Trace.MsgLine( " PDB[1].Offset: {0:x8}, {0}", pfh[1].offset ) ;
-			Utils.Trace.MsgLine( " PDB[0].Length: {0:x8}, {0}", pfh[1].offset - pfh[0].offset ) ;
+			Trace.MsgLine( "    mobiOffset: {0:x8}, {0}", mobiOffset ) ;
+			Trace.MsgLine( "fullNameOffset: {0:x8}, {0}", mh.fullNameOffset ) ;
+			Trace.MsgLine( "fullNameLength: {0:x8}, {0}", mh.fullNameLength ) ;
+			Trace.MsgLine( " PDB[0].Offset: {0:x8}, {0}", pfh[0].offset ) ;
+			Trace.MsgLine( " PDB[1].Offset: {0:x8}, {0}", pfh[1].offset ) ;
+			Trace.MsgLine( " PDB[0].Length: {0:x8}, {0}", pfh[1].offset - pfh[0].offset ) ;
 			byte[] fullName = GetBytes( mobiData, ref mobiOffset, mh.fullNameLength ) ;
-			Utils.Trace.MsgLine( "     Full Name: \"{0}\"", Encoding.GetEncoding((int)mh.codePage).GetString( fullName ) ) ;
+			Trace.MsgLine( "     Full Name: \"{0}\"", Encoding.GetEncoding((int)mh.codePage).GetString( fullName ) ) ;
 			mobiOffset += 2 ;	// two 0x00 bytes
 			UInt32 fullNameEnd = mobiOffset ;
 			while( (mobiOffset % 4) != 0 ) mobiOffset++ ;
-			Utils.Trace.MsgLine( " Post-name pad: 2 + {0} bytes", mobiOffset - fullNameEnd ) ;
-			Utils.Trace.MsgLine( "    mobiOffset: {0:x8}, {0}", mobiOffset ) ;
-			Utils.Trace.MsgLine( "[??remainder??] {0:x8}, {0}", pfh[1].offset - mobiOffset ) ;
+			Trace.MsgLine( " Post-name pad: 2 + {0} bytes", mobiOffset - fullNameEnd ) ;
+			Trace.MsgLine( "    mobiOffset: {0:x8}, {0}", mobiOffset ) ;
+			Trace.MsgLine( "[??remainder??] {0:x8}, {0}", pfh[1].offset - mobiOffset ) ;
 
-			Utils.Trace.MsgLine() ;
+			Trace.MsgLine() ;
 			DumpBytes( GetBytes( mobiData, ref mobiOffset, pfh[1].offset - mobiOffset ), "[??remainder??]" ) ;
 */
 #if false
@@ -1076,12 +1093,12 @@ namespace Tripe.eBook {
 #endif
 			for( int i=1 ; i < pfh.recordCount ; i++ ) {
 				if( pfh[i-1].filePosn >= pfh[i].filePosn )
-					Utils.Trace.MsgLine( "** PDB[{0}].offset:{1} >= PDB[{2}].offset:{3}", i-1, pfh[i-1].filePosn, i, pfh[i].filePosn ) ;
+					Trace.MsgLine( "** PDB[{0}].offset:{1} >= PDB[{2}].offset:{3}", i-1, pfh[i-1].filePosn, i, pfh[i].filePosn ) ;
 				if( pfh[i].filePosn - pfh[i-1].filePosn == 8 ) {
 					UInt32 here = pfh[i-1].filePosn ;
-					Utils.Trace.MsgLine( "** PDB[{0}].offset = {1:x8}, {1} is an 8-byte record", i-1, here ) ;
+					Trace.MsgLine( "** PDB[{0}].offset = {1:x8}, {1} is an 8-byte record", i-1, here ) ;
 					if( Encoding.Default.GetString( GetBytes( fileData, ref here, 8 ) ).CompareTo( "BOUNDARY" ) == 0 ) {
-						Utils.Trace.MsgLine( "** PDB[{0}] is BOUNDARY", i-1 ) ;
+						Trace.MsgLine( "** PDB[{0}] is BOUNDARY", i-1 ) ;
 					}
 				}
 			}
@@ -1150,17 +1167,17 @@ namespace Tripe.eBook {
 			UInt32 orgZeroSize = pfh[1].filePosn - pfh[0].filePosn ;	// Original size
 			UInt32 recZeroSize = RebuildSizeAndOffsets( orgZeroSize ) ;
 			UInt32 adjustment  = recZeroSize - orgZeroSize ;
-			Utils.Trace.MsgLine( "Adjustment to remaining PDB records: {0}", (int)adjustment ) ;
+			Trace.MsgLine( "Adjustment to remaining PDB records: {0}", (int)adjustment ) ;
 
 			//	Open the file and begin writing bits and pieces...
 			//
 			BinaryWriter bw = null ;
 			if( adjustment == 0 ) {
 				bw = new BinaryWriter( File.Open( fileName, FileMode.Open ) ) ;
-				Utils.Trace.MsgLine( "Replacing Palm/MOBI/EXTH data in: {0}", fileName ) ;
+				Trace.MsgLine( "Replacing Palm/MOBI/EXTH data in: {0}", fileName ) ;
 			} else {
 				bw = new BinaryWriter( File.Open( fileName, FileMode.Create ) ) ;
-				Utils.Trace.MsgLine( "Replacing whole file: {0}", fileName ) ;
+				Trace.MsgLine( "Replacing whole file: {0}", fileName ) ;
 			}
 			UInt32 filePosn = 0 ;
 			UInt32 written = 0 ;
@@ -1169,7 +1186,7 @@ namespace Tripe.eBook {
 			//	will need to be adjusted by the amount calculated above.
 			//
 			written = pfh.WriteTo( bw, adjustment ) ;
-			Utils.Trace.MsgLine( "@[0x{0:x8}, {0,8}] PalmFileHeader: {1,8} bytes", filePosn, written ) ;
+			Trace.MsgLine( "@[0x{0:x8}, {0,8}] PalmFileHeader: {1,8} bytes", filePosn, written ) ;
 			filePosn += written ;
 
 			//	Check this has taken us to where we thought it should!
@@ -1180,13 +1197,13 @@ namespace Tripe.eBook {
 			//	Write the PalmDoc header
 			//
 			written = pdh.WriteTo( bw ) ;
-			Utils.Trace.MsgLine( "@[0x{0:x8}, {0,8}] PalmDocHeader:  {1,8} bytes", filePosn, written ) ;
+			Trace.MsgLine( "@[0x{0:x8}, {0,8}] PalmDocHeader:  {1,8} bytes", filePosn, written ) ;
 			filePosn += written ;
 
 			//	Write the MOBI Header
 			//
 			written = mh.WriteTo( bw ) ;
-			Utils.Trace.MsgLine( "@[0x{0:x8}, {0,8}] MOBI Header:    {1,8} bytes", filePosn, written ) ;
+			Trace.MsgLine( "@[0x{0:x8}, {0,8}] MOBI Header:    {1,8} bytes", filePosn, written ) ;
 			filePosn += written ;
 
 			//	Write the EXTH Header + records
@@ -1196,7 +1213,7 @@ namespace Tripe.eBook {
 			//			the original file used.
 			//
 			written = exth.WriteTo( bw ) ;
-			Utils.Trace.MsgLine( "@[0x{0:x8}, {0,8}] EXTH data:      {1,8} bytes", filePosn, written ) ;
+			Trace.MsgLine( "@[0x{0:x8}, {0,8}] EXTH data:      {1,8} bytes", filePosn, written ) ;
 			filePosn += written ;
 
 			//	Write the DRM data if originally present.
@@ -1209,7 +1226,7 @@ namespace Tripe.eBook {
 				if( recZeroPosn + mh.drmOffset != filePosn ) throw new MobiPositionException( "About to write DRM Data at wrong position", filePosn, recZeroPosn, mh.drmOffset ) ;
 				if( mh.drmSize != drmData.Length ) throw new Exception( string.Format( "DRM Data wrong size: headerLength={0}, byteLength={1}", mh.drmSize, drmData.Length ) ) ;
 				written = PutBytes( bw, drmData ) ;
-				Utils.Trace.MsgLine( "@[0x{0:x8}, {0,8}] DRM data:       {1,8} bytes", filePosn, written ) ;
+				Trace.MsgLine( "@[0x{0:x8}, {0,8}] DRM data:       {1,8} bytes", filePosn, written ) ;
 				filePosn += written ;
 			}
 
@@ -1223,7 +1240,7 @@ namespace Tripe.eBook {
 			for( int i=0 ; i < fullNamePadding ; i++ )
 				bw.Write( (byte) 0 ) ;
 			written += fullNamePadding ;
-			Utils.Trace.MsgLine( "@[0x{0:x8}, {0,8}] Full Name:      {1,8} bytes", filePosn, written ) ;
+			Trace.MsgLine( "@[0x{0:x8}, {0,8}] Full Name:      {1,8} bytes", filePosn, written ) ;
 			filePosn += written ;
 
 			//	Write any trailing data to the end of the record.  I've not seen any documented use of
@@ -1234,7 +1251,7 @@ namespace Tripe.eBook {
 			//	TODO:	Possibly make use of expansion space if present, and/or options to strip/add.
 			//
 			written = PutBytes( bw, gap3 ) ;
-			Utils.Trace.MsgLine( "@[0x{0:x8}, {0,8}] Remainder:      {1,8} bytes", filePosn, written ) ;
+			Trace.MsgLine( "@[0x{0:x8}, {0,8}] Remainder:      {1,8} bytes", filePosn, written ) ;
 			filePosn += written ;
 
 			//	Check that we've got to the expected end of the first PDB record.
@@ -1250,9 +1267,9 @@ namespace Tripe.eBook {
 			if( adjustment != 0 ) {
 				written = PutBytes( bw, fileData, pfh[1].filePosn, (UInt32) fileData.Length - pfh[1].filePosn ) ;
 				filePosn += written ;
-				Utils.Trace.MsgLine( "Written {0} bytes", filePosn ) ;
+				Trace.MsgLine( "Written {0} bytes", filePosn ) ;
 			} else
-				Utils.Trace.MsgLine( "Updated {0} bytes", filePosn ) ;
+				Trace.MsgLine( "Updated {0} bytes", filePosn ) ;
 
 			bw.Close() ;
 
@@ -1261,7 +1278,7 @@ namespace Tripe.eBook {
 			//	TODO:	Make this an option
 			//
 			if( createTime != DateTime.MinValue ) {
-				Utils.Trace.MsgLine( "Resetting file times: C:{0}, A:{0}, M:{0}", createTime, accessTime, modifyTime ) ;
+				Trace.MsgLine( "Resetting file times: C:{0}, A:{0}, M:{0}", createTime, accessTime, modifyTime ) ;
 				File.SetCreationTimeUtc( fileName, createTime ) ;
 				File.SetLastWriteTimeUtc( fileName, modifyTime ) ;
 				File.SetLastAccessTimeUtc( fileName, accessTime ) ;
@@ -1291,8 +1308,26 @@ namespace Tripe.eBook {
 				fullName.Replace( Encoding.GetEncoding( int.Parse( mh.codePage.ToString() ) ).GetBytes( value ) ) ;
 			}
 		}
+		public string FindFirstEXTH( uint type ) {
+			for( int i=0 ; i < exth.recordCount ; i++ ) {
+				if( exth.records[i].type == type ) {
+					return Encoding.GetEncoding( int.Parse( mh.codePage.ToString() ) ).GetString( exth.records[i].data ) ;
+				}
+			}
+			return string.Empty ;
+		}
+		public void SetFirstEXTH( uint type, string value ) {
+			for( int i=0 ; i < exth.recordCount ; i++ ) {
+				if( exth.records[i].type == type ) {
+					exth.records[i].data = Encoding.GetEncoding(int.Parse( mh.codePage.ToString() ) ).GetBytes( value ) ;
+					return ;
+				}
+			}
+			throw new Exception( "Cannot add an EXTH that doesn't exist" ) ;
+		}
 		public string UpdatedTitle {
 			get {
+				return FindFirstEXTH( 503 ) ;
 				for( int i=0 ; i < exth.recordCount ; i++ ) {
 					if( exth.records[i].type == 503 ) {
 						return Encoding.GetEncoding( int.Parse( mh.codePage.ToString() ) ).GetString( exth.records[i].data ) ;
@@ -1301,16 +1336,20 @@ namespace Tripe.eBook {
 				return string.Empty ;
 			}
 			set {
+				SetFirstEXTH( 503, value ) ;
+				/*
 				for( int i=0 ; i < exth.recordCount ; i++ ) {
 					if( exth.records[i].type == 503 ) {
 						exth.records[i].data = Encoding.GetEncoding(int.Parse( mh.codePage.ToString() ) ).GetBytes( value ) ;
 						//exth.records[i].length = 8 + (UInt32) exth.records[i].data.Length ;
 					}
 				}
+				*/
 			}
 		}
 		public string Author {
 			get {
+				return FindFirstEXTH( 100 ) ;
 				for( int i=0 ; i < exth.recordCount ; i++ ) {
 					if( exth.records[i].type == 100 ) {
 						return Encoding.GetEncoding( int.Parse( mh.codePage.ToString() ) ).GetString( exth.records[i].data ) ;
@@ -1319,12 +1358,23 @@ namespace Tripe.eBook {
 				return string.Empty ;
 			}
 			set {
+				SetFirstEXTH( 100, value ) ;
+				/*
 				for( int i=0 ; i < exth.recordCount ; i++ ) {
 					if( exth.records[i].type == 100 ) {
 						exth.records[i].data = Encoding.GetEncoding(int.Parse( mh.codePage.ToString() ) ).GetBytes( value ) ;
 						break ; //TODO:ZXZ:Allow array selection...
 					}
 				}
+				*/
+			}
+		}
+		public string ASIN {
+			get {
+				return FindFirstEXTH( 113 ) ;
+			}
+			set {
+				SetFirstEXTH( 113, value ) ;
 			}
 		}
 		private struct MOBIHeader {
@@ -1401,7 +1451,7 @@ namespace Tripe.eBook {
 				LoadFrom( fileData, ref filePosn ) ;
 			}
 			public void LoadFrom( byte[] fileData, ref uint filePosn ) {
-				//Utils.Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
+				//Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
 				if( fileData == null ) throw new ArgumentException() ;
 				if( fileData.Length - filePosn < 8 ) throw new ArgumentException() ;
 
@@ -1410,7 +1460,7 @@ namespace Tripe.eBook {
 				if( identifier.ToString() != "MOBI" ) {//nonref
 					DumpBytes( GetBytes( fileData, NonRef32( Address - 0x80 ), 0x80 ), "Preceding 0x80 bytes", Address - 128 ) ;
 					DumpBytes( GetBytes( fileData, NonRef32( Address        ), 0x80 ), "Following 0x80 bytes", Address       ) ;
-					Utils.Trace.MsgLine( ">>{0}<<", identifier.ToString() ) ;
+					Trace.MsgLine( ">>{0}<<", identifier.ToString() ) ;
 					throw new Exception( "Invalid MOBI block" ) ;
 				}
 				headerLength		= GetSwapped32( fileData, ref filePosn ) ;
@@ -1557,7 +1607,7 @@ namespace Tripe.eBook {
 				return result ;
 			}
 			public void Dump() {
-				Utils.Trace.MsgLine( ToString() ) ;
+				Trace.MsgLine( ToString() ) ;
 			}
 			public override string ToString() {
 				string result = string.Format( "MOBIHeader [size={0}] at filePosn {1:x8}, {1}:\r\n", Size, Address ) +
@@ -1739,7 +1789,7 @@ namespace Tripe.eBook {
 				LoadFrom( fileData, ref filePosn ) ;
 			}
 			public void LoadFrom( byte[] fileData, ref uint filePosn ) {
-				//Utils.Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
+				//Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
 				if( fileData == null ) throw new ArgumentException() ;
 				if( fileData.Length - filePosn < 8 ) throw new ArgumentException() ;
 
@@ -1747,7 +1797,7 @@ namespace Tripe.eBook {
 				type				= GetSwapped32( fileData, ref filePosn ) ;
 				length				= GetSwapped32( fileData, ref filePosn ) ;
 //???
-//Utils.Trace.MsgLine( "EXTH: type=0x{0:x8}, {0,5}  length=0x{1:x8}, {1,5}", type, length ) ;
+//Trace.MsgLine( "EXTH: type=0x{0:x8}, {0,5}  length=0x{1:x8}, {1,5}", type, length ) ;
 				data				= GetBytes( fileData, ref filePosn, dataLen ) ;
 				Size = filePosn - Address ;
 			}
@@ -1761,7 +1811,7 @@ namespace Tripe.eBook {
 				return length ;
 			}
 			public void Dump() {
-				Utils.Trace.MsgLine( ToString() ) ;
+				Trace.MsgLine( ToString() ) ;
 			}
 			public override string ToString() {
 				EXTHType exth = EXTHType.Find( type ) ;
@@ -1795,7 +1845,7 @@ namespace Tripe.eBook {
 				LoadFrom( fileData, ref filePosn ) ;
 			}
 			public void LoadFrom( byte[] fileData, ref uint filePosn ) {
-				//Utils.Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
+				//Trace.MsgLine( "{0}.LoadFrom( {1:x8}, {1} )", this.GetType(), filePosn ) ;
 				if( fileData == null ) throw new ArgumentException() ;
 				if( fileData.Length - filePosn < 12 ) throw new ArgumentException() ;
 
@@ -1804,7 +1854,7 @@ namespace Tripe.eBook {
 				if( identifier.ToString() != "EXTH" ) {//nonref
 					DumpBytes( GetBytes( fileData, NonRef32( Address - 0x80 ), 0x80 ), "Preceding 0x80 bytes", Address - 128 ) ;
 					DumpBytes( GetBytes( fileData, NonRef32( Address        ), 0x80 ), "Following 0x80 bytes", Address       ) ;
-					Utils.Trace.MsgLine( ">>{0}<<", identifier.ToString() ) ;
+					Trace.MsgLine( ">>{0}<<", identifier.ToString() ) ;
 					throw new Exception( "Invalid EXTH block" ) ;
 				}
 				headerLength		= GetSwapped32( fileData, ref filePosn ) ;
@@ -1831,16 +1881,16 @@ namespace Tripe.eBook {
 				nPadding = SkipToFourByteBoundary( ref filePosn ) ;
 
 				if( Size == headerLength && nPadding == 0 ) {
-					Utils.Trace.MsgLine( "EXTH: Padding=None" ) ;
+					Trace.MsgLine( "EXTH: Padding=None" ) ;
 				} else if( Size + nPadding == headerLength ) {
-					Utils.Trace.MsgLine( "EXTH: Padding=Internal: Size={0}, headerLength={1}, padding={2}", Size, headerLength, nPadding ) ;
+					Trace.MsgLine( "EXTH: Padding=Internal: Size={0}, headerLength={1}, padding={2}", Size, headerLength, nPadding ) ;
 					Size += nPadding ;
 				} else if( Size == headerLength ) {
-					Utils.Trace.MsgLine( "EXTH: Padding=EXTERNAL: Size={0}, headerLength={1}, padding={2}", Size, headerLength, nPadding ) ;
+					Trace.MsgLine( "EXTH: Padding=EXTERNAL: Size={0}, headerLength={1}, padding={2}", Size, headerLength, nPadding ) ;
 				} else
-//ZXZ!!!			Utils.Trace.MsgLine( "Invalid EXTH padding: Size={0}, headerLength={1}, padding={2}, diff={3}", Size, headerLength, nPadding, (int)Size-headerLength ) ;
+//ZXZ!!!			Trace.MsgLine( "Invalid EXTH padding: Size={0}, headerLength={1}, padding={2}, diff={3}", Size, headerLength, nPadding, (int)Size-headerLength ) ;
 					throw new Exception( string.Format( "Invalid EXTH padding: Size={0}, headerLength={1}, padding={2}, diff={3}", Size, headerLength, nPadding, (int)Size-headerLength ) ) ;
-				Utils.Trace.MsgLine() ;
+				Trace.MsgLine() ;
 			}
 			public UInt32 WriteTo( BinaryWriter bw ) {
 				UInt32 result ;
@@ -1874,13 +1924,13 @@ namespace Tripe.eBook {
 			//TODO: Find/replace/delete EXTH records
 			//---------------------------------------
 			public void Dump() {
-				Utils.Trace.MsgLine( ToString() ) ;
+				Trace.MsgLine( ToString() ) ;
 			}
 			public void DumpAll() {
 				Dump() ;
 				for( int i=0 ; i < recordCount ; i++ )
 					records[i].Dump() ;
-				Utils.Trace.MsgLine() ;
+				Trace.MsgLine() ;
 			}
 			public override string ToString() {
 				return string.Format( "EXTHHeader [size={0}] at filePosn {1:x8}, {1}:\r\n", Size, Address ) +
@@ -1894,23 +1944,27 @@ namespace Tripe.eBook {
 			TripeXmlDocument xml = new TripeXmlDocument() ;
 			//TripeNode ebook = new TripeNode( xml.AppendChild( xml.CreateElement( "ebook" ) ) ) ;
 			TripeNode ebook =	new TripeNode( xml, "ebook" ) ;
+			ebook	.AddChild( "filename",		this.fileName		)
+					;
 			TripeNode palmFile =new TripeNode( ebook, "palmfile" ) ;
 			TripeNode palmDoc = new TripeNode( ebook, "palmdoc" ) ;
 			TripeNode mobi =	new TripeNode( ebook, "mobi" ) ;
 			TripeNode exth =	new TripeNode( ebook, "exth" ) ;
-			palmFile.AddChild( "databaseName", pfh.databaseName				)
-					.AddChild( "uniqueIDseed",	pfh.uniqueIDseed.ToString()	)
+			palmFile.AddChild( "databaseName",	pfh.databaseName	)
+					.AddChild( "uniqueIDseed",	pfh.uniqueIDseed	)
 					;
-			palmDoc	.AddChild( "textLength",	pdh.textLength.ToString()	)
-					.AddChild( "recordCount",	pdh.recordCount.ToString()	)
+			palmDoc	.AddChild( "textLength",	pdh.textLength		)
+					.AddChild( "recordCount",	pdh.recordCount		)
 					;
-			mobi	.AddChild( "codePage",		mh.codePage.ToString()		)
-					.AddChild( "uniqueID",		mh.uniqueID.ToString()		)
+			mobi	.AddChild( "codePage",		mh.codePage			)
+					.AddChild( "uniqueID",		mh.uniqueID			)
+					.AddChild( "fileVersion",	mh.fileVersion		)
 					;
-			exth	.AddChild( "author",		Author						)
-					.AddChild( "title",			Title						)
+			exth	.AddChild( "author",		Author				)
+					.AddChild( "title",			Title				)
+					.AddChild( "asin",			ASIN				)
 					;
-			Utils.Trace.MsgLine( "--------------------\n{0}\n--------------------", xml.OuterXml ) ;
+			Console.WriteLine( "{0}", xml.OuterXml ) ;
 		}
 	}
 
@@ -1939,6 +1993,9 @@ namespace Tripe.eBook {
 		public TripeNode AddChild( String tag, byte[] value ) {
 			return AddChild( tag, Encoding.UTF8.GetString( value ) ) ;
 		}
+		public TripeNode AddChild( String tag, long value ) {
+			return AddChild( tag, value.ToString() ) ;
+		}
 	}
 	class TripeXmlDocument : XmlDocument
 	{
@@ -1954,6 +2011,7 @@ namespace Tripe.eBook {
 	{
 		static int Main( string[] args )
 		{
+			
 #if __STREAM_CHUNK_TESTING
 			byte[] buffer = Encoding.ASCII.GetBytes( "abcdefghijklm" ) ;
 			MemoryStream ms = new MemoryStream( buffer );
@@ -1996,7 +2054,7 @@ namespace Tripe.eBook {
 			int argp = 0 ;
 
 			if( args.Length == 0 ) {
-				Utils.Trace.MsgLine( "usage: TripeMobi [-v][-d] <mobifile>" ) ;
+				Trace.MsgLine( "usage: TripeMobi [-v][-d] <mobifile>" ) ;
 				return 1 ;
 			}
 
@@ -2012,6 +2070,7 @@ namespace Tripe.eBook {
 							break ;
 						case "-x":
 							dumpXML = true ;
+							dumpOnly = true ;
 							break ;
 						default:
 							throw new Exception( String.Format( "Unrecognised option '%s'", args[argp] ) );

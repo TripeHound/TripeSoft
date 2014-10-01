@@ -14,6 +14,12 @@
 	//
 	//	Despite my reservations, it seems at least one other thinks deriving is the right way; see:
 	//		http://www.java2s.com/Code/CSharp/File-Stream/BufferedInputStream.htm
+	//
+	//	TODO: revise/remove this comment
+	//		Now realise that it must both derive and have a private member ... 'Stream' is an abstract
+	//		class, so we derive from it for the interfact (and so we can be used whereever a 'Stream'
+	//		can be used) but we need to store the underlying stream since we don't actually IMPLEMENT
+	//		a stream, just wrap some of the calls.
 	//---------------------------------------------------------------------------------------------------------------------------
 
 	/// <summary>
