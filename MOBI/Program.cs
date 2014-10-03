@@ -1328,12 +1328,14 @@ namespace Tripe.eBook {
 		public string UpdatedTitle {
 			get {
 				return FindFirstEXTH( 503 ) ;
+				/*
 				for( int i=0 ; i < exth.recordCount ; i++ ) {
 					if( exth.records[i].type == 503 ) {
 						return Encoding.GetEncoding( int.Parse( mh.codePage.ToString() ) ).GetString( exth.records[i].data ) ;
 					}
 				}
 				return string.Empty ;
+				*/
 			}
 			set {
 				SetFirstEXTH( 503, value ) ;
@@ -1350,12 +1352,14 @@ namespace Tripe.eBook {
 		public string Author {
 			get {
 				return FindFirstEXTH( 100 ) ;
+				/*
 				for( int i=0 ; i < exth.recordCount ; i++ ) {
 					if( exth.records[i].type == 100 ) {
 						return Encoding.GetEncoding( int.Parse( mh.codePage.ToString() ) ).GetString( exth.records[i].data ) ;
 					}
 				}
 				return string.Empty ;
+				*/
 			}
 			set {
 				SetFirstEXTH( 100, value ) ;
